@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+        <!DOCTYPE mapper
+                PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itheima.dao.AuthorityDao">
+    <select id="findAllUser" parameterType="string" resultType="User">
+        select * from t_user where username like #{queryString} or remark like #{queryString}
+    </select>
+
+    <select id="findAllUserByUsername" parameterType="string" resultType="User">
+        SELECT * FROM t_user
+        WHERE
+        add_user_id IN(SELECT id FROM t_user WHERE username = #{username})
+        and (username like #{queryString} or remark like #{queryString})
+    </select>
+
+    <select id="findAllRole" resultType="Role">
+        select * from t_role
+    </select>
+
+    <select id="findAllRoleByUsername" parameterType="String" resultType="Role">
+        SELECT * FROM t_role
+        WHERE
+        add_user_id IN(SELECT id FROM t_user WHERE username = #{name})
+    </select>
+
+    <select id="findIdRolenameByUsername" parameterType="string" resultType="string">
+        SELECT r.`keyword` FROM t_role r,t_user_role ur,t_user u
+        WHERE r.`id` = ur.role_id AND u.id = ur.user_id
+        AND username = #{username}
+    </select>
+
+    <select id="checkUsername" parameterType="string" resultType="User">
+        select * from t_user where username = #{username}
+    </select>
+
+    <insert id="addUser" parameterType="User">
+        insert into t_user values (null,#{birthday},#{gender},#{username},#{password},#{remark},#{station},#{telephone},#{add_user_id})
+        <selectKey keyProperty="id" resultType="int" order="AFTER">
+            select last_insert_id()
+        </selectKey>
+    </insert>
+
+    <insert id="addUserRole" parameterType="int">
+        insert into t_user_role values (#{id},#{checkitemId})
+    </insert>
+
+    <select id="findIdByUser" parameterType="int" resultType="User">
+        select * from t_user where id = #{id}
+    </select>
+
+    <select id="findUserRoleById" parameterType="int" resultType="int">
+        select role_id from t_user_role where user_id = #{id}
+    </select>
+
+    <update id="updateUser" parameterType="User">
+        update t_user
+        <set>
+            birthday = #{birthday},
+            gender = #{gender},
+            username = #{username},
+            password = #{password},
+            remark = #{remark},
+            station = #{station},
+            telephone = #{telephone},
+            add_user_id = #{add_user_id}
+       </set>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteUserRole" parameterType="int">
+        delete from t_user_role where user_id = #{id}
+    </delete>
+
+    <delete id="deleteUser" parameterType="int">
+        delete from t_user where id = #{id}
+    </delete>
+</mapper>

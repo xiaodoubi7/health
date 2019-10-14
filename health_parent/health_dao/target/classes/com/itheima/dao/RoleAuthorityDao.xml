@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+        <!DOCTYPE mapper
+                PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itheima.dao.RoleAuthorityDao">
+    <select id="findAllRole" resultType="Role">
+        select * from t_role where `name` LIKE #{queryString} or description LIKE #{queryString}
+    </select>
+
+    <select id="findRoleByName" parameterType="string" resultType="Role">
+        SELECT * FROM t_role
+        WHERE add_user_id IN(SELECT id FROM t_user WHERE username = #{name})
+        AND (`name` LIKE #{queryString} or description LIKE #{queryString})
+    </select>
+
+    <select id="findAllPermission" resultType="Permission">
+        select * from  t_permission
+    </select>
+
+    <select id="findPermissionByName" parameterType="String" resultType="Permission">
+        SELECT * FROM t_permission
+        WHERE id IN(
+        SELECT rp.permission_id FROM t_user u, t_user_role ur, t_role r, t_role_permission rp
+        WHERE u.id = ur.user_id AND r.id = ur.role_id AND r.id = rp.role_id
+        AND u.username = #{name})
+    </select>
+
+    <select id="findAllMenu" resultType="Menu">
+        select * from t_menu
+    </select>
+
+    <select id="findMenuByName" parameterType="string" resultType="Menu">
+        SELECT * FROM t_menu
+        WHERE id IN(
+        SELECT rm.`menu_id` FROM t_user u, t_user_role ur, t_role r, t_role_menu rm
+        WHERE u.id = ur.user_id AND r.id = ur.role_id AND r.id = rm.`role_id`
+        AND u.username = #{name})
+    </select>
+
+    <select id="findRoleByKeyword" parameterType="String" resultType="role">
+        select * from t_role where keyword = #{keyword}
+    </select>
+
+    <insert id="addRole" parameterType="role">
+        insert into t_role values (null,#{name},#{keyword},#{description},#{add_user_id})
+        <selectKey keyProperty="id" resultType="int" order="AFTER">
+            select last_insert_id()
+        </selectKey>
+    </insert>
+
+    <insert id="addRoleMenu" parameterType="int">
+        insert into t_role_menu values (#{id},#{integer})
+    </insert>
+
+    <insert id="addRolePermission" parameterType="int">
+        insert into t_role_permission values (#{id},#{integer})
+    </insert>
+
+    <select id="findRole" parameterType="int" resultType="Role">
+        select * from t_role where id = #{id}
+    </select>
+
+    <select id="findPermissionsById" parameterType="int" resultType="int">
+        SELECT permission_id FROM t_role_permission WHERE role_id = #{id}
+    </select>
+
+    <select id="findMenuIdsById" parameterType="int" resultType="int">
+        select menu_id from t_role_menu where role_id = #{id}
+    </select>
+
+    <update id="updateRole" parameterType="map">
+        update t_role
+        <set>
+            name = #{name},
+            keyword = #{keyword},
+            description = #{description}
+        </set>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteRolePermission" parameterType="int">
+        delete from t_role_permission where role_id = #{id}
+    </delete>
+
+    <delete id="deleteRoleMenu" parameterType="int">
+        delete from t_role_menu where role_id = #{id}
+    </delete>
+
+    <select id="findRoleUserById" parameterType="int" resultType="int">
+        select count(user_id) from t_user_role where role_id = #{id}
+    </select>
+
+    <delete id="deleteRoleById" parameterType="int">
+        delete from t_role where id = #{id}
+    </delete>
+</mapper>
